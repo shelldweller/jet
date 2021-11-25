@@ -40,17 +40,43 @@ impl Iterator for JsonReader {
 }
 
 
-// struct JsonLineReader {
-//     reader: Box<dyn BufRead>,
-// }
+struct JsonLineReader {
+    reader: Box<dyn BufRead>,
+}
 
-// impl Iterator for JsonLineReader {
-//     type Item = Value;
+impl JsonLineReader {
+    fn new(reader: Box<dyn BufRead>) -> Self {
+        Self { reader: reader }
+    }
+}
 
-//     fn next(&mut self) -> Option<Self::Item> {
-//         None
-//     }
-// }
+impl Iterator for JsonLineReader {
+    type Item = Result<Value, String>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let mut buffer = String::new();
+
+        match self.reader.read_line(&mut buffer) { // FIXME: this line is the only difference from JsonReader!
+            Err(e) => {
+                return Some(Err(format!("I/O error: {}", e)));
+            },
+            Ok(_) => ()
+        }
+
+        if buffer.is_empty() {
+            return None;
+        }
+
+        match serde_json::from_str(&buffer) {
+            Ok(value) => {
+                return Some(Ok(value));
+            },
+            Err(e) => {
+                return Some(Err(format!("Parsing error: {}", e)));
+            },
+        }
+    }
+}
 
 
 #[cfg(test)]
@@ -97,5 +123,30 @@ mod jsonreader_tests {
 
         assert!(reader.next().is_none());
     }
-
 }
+
+
+#[cfg(test)]
+mod jsonlinereader_tests {
+    use serde_json::{json};
+    use super::JsonLineReader;
+
+    #[test]
+    fn iterates_over_elements() {
+        let lines = "{\"some\":\"value\"}\n{\"otherValue\":0}\n";
+        let mut reader = JsonLineReader::new(Box::new(lines.as_bytes()));
+
+        assert_eq!(
+            reader.next().unwrap().unwrap(),
+            json!{{"some": "value"}}
+        );
+        assert_eq!(
+            reader.next().unwrap().unwrap(),
+            json!{{"otherValue": 0}}
+        );
+        assert!(
+            reader.next().is_none()
+        );
+    }
+}
+
