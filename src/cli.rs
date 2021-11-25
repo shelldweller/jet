@@ -8,7 +8,7 @@ type ParseError = &'static str;
 enum SerdeFormat {
     Json,
     JsonLine,
-    Csv
+    // Csv
 }
 
 impl FromStr for SerdeFormat {
@@ -17,7 +17,7 @@ impl FromStr for SerdeFormat {
         match day {
             "json" => Ok(SerdeFormat::Json),
             "jsonline" => Ok(SerdeFormat::JsonLine),
-            "csv" => Ok(SerdeFormat::Csv),
+            // "csv" => Ok(SerdeFormat::Csv),
             _ => Err("Invalid format"),
         }
     }
