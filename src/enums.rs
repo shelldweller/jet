@@ -8,7 +8,7 @@ pub enum SerdeFormat {
 }
 
 impl FromStr for SerdeFormat {
-    type Err = &'static str;
+    type Err = String;
 
     fn from_str(value: &str) -> Result<Self, Self::Err> {
         let normalized_value: &str = &value.to_lowercase();
@@ -19,7 +19,7 @@ impl FromStr for SerdeFormat {
             "jl" => Ok(SerdeFormat::JsonLine),
             "jsonline" => Ok(SerdeFormat::JsonLine),
             "json-line" => Ok(SerdeFormat::JsonLine),
-            _ => Err("Unsupported format"),
+            _ => Err(format!("Unsupported format: {}", value)),
         }
     }
 }
