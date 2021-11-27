@@ -1,27 +1,6 @@
 use std::path::PathBuf;
-use std::str::FromStr;
 use structopt::StructOpt;
-
-type ParseError = &'static str;
-
-#[derive(Debug)]
-enum SerdeFormat {
-    Json,
-    JsonLine,
-    // Csv
-}
-
-impl FromStr for SerdeFormat {
-    type Err = ParseError;
-    fn from_str(day: &str) -> Result<Self, Self::Err> {
-        match day {
-            "json" => Ok(SerdeFormat::Json),
-            "jsonline" => Ok(SerdeFormat::JsonLine),
-            // "csv" => Ok(SerdeFormat::Csv),
-            _ => Err("Invalid format"),
-        }
-    }
-}
+use crate::enums::SerdeFormat;
 
 #[derive(StructOpt, Debug)]
 #[structopt(name = "jet")]
@@ -42,7 +21,7 @@ struct Opt {
     #[structopt(short, long, default_value = "json" )]
     input_format: SerdeFormat,
 
-    // input format
+    // output format
     #[structopt(short, long, default_value = "json" )]
     output_format: SerdeFormat,
 
