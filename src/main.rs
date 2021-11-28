@@ -1,7 +1,11 @@
+mod app;
 mod cli;
-mod readers;
 mod enums;
+mod readers;
+
+use structopt::StructOpt;
 
 fn main() {
-    cli::run_cli();
+    let args = cli::Opt::from_args();
+    app::run_jet(args);
 }

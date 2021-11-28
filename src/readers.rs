@@ -1,12 +1,12 @@
 use std::io::{BufRead};
 use serde_json::{Value};
 
-struct JsonReader {
+pub struct JsonReader {
     reader: Box<dyn BufRead>,
 }
 
 impl JsonReader {
-    fn new(reader: Box<dyn BufRead>) -> Self {
+    pub fn new(reader: Box<dyn BufRead>) -> Self {
         Self { reader: reader }
     }
 }
@@ -40,12 +40,12 @@ impl Iterator for JsonReader {
 }
 
 
-struct JsonLineReader {
+pub struct JsonLineReader {
     reader: Box<dyn BufRead>,
 }
 
 impl JsonLineReader {
-    fn new(reader: Box<dyn BufRead>) -> Self {
+    pub fn new(reader: Box<dyn BufRead>) -> Self {
         Self { reader: reader }
     }
 }
@@ -149,4 +149,3 @@ mod jsonlinereader_tests {
         );
     }
 }
-
