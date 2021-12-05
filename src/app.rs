@@ -53,7 +53,7 @@ impl Iterator for FileIterator {
         if self.current_file >= self.files.len() {
             return None;
         }
-        let result = File::open(self.files[self.current_file].clone());
+        let result = File::open(&self.files[self.current_file]);
         match result {
             Ok(f) => {
                 self.current_file += 1;
