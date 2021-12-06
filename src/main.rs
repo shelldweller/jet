@@ -2,6 +2,7 @@ mod app;
 mod cli;
 mod enums;
 mod readers;
+mod writers;
 
 use structopt::StructOpt;
 

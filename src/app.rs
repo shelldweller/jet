@@ -6,6 +6,7 @@ use std::path::PathBuf;
 use crate::cli::Opt;
 use crate::enums::SerdeFormat;
 use crate::readers::{JsonReader, JsonLineReader};
+use crate::writers::{JsonWriter, JsonLineWriter, Writer};
 
 
 struct StdinIterator {
@@ -77,21 +78,27 @@ pub fn run_jet(args: Opt) {
         Box::new(FileIterator::new(args.files))
     };
 
+    let mut writer: Box<dyn Writer> = match args.output_format {
+        SerdeFormat::Json => Box::new(JsonWriter::new()),
+        SerdeFormat::JsonLine => Box::new(JsonLineWriter::new()),
+    };
+
     for source in input_sources {
-        match source {
-            Err(error) => {
-                eprintln!("{}", error);
-                continue;
-            },
-            _ => ()
+        if let Err(error) = source {
+            eprintln!("{}", error);
+            continue;
         };
         let input = source.unwrap();
         let reader: Box<dyn Iterator<Item = Result<Value, String>>> = match args.input_format {
             SerdeFormat::Json => Box::new(JsonReader::new(input)),
             SerdeFormat::JsonLine => Box::new(JsonLineReader::new(input)),
         };
-        for document in reader {
-            println!("PROCESSING {:?}", document);
+        for item in reader {
+            match item {
+                Ok(document) => writer.write(document),
+                Err(error) => eprintln!("{:?}", error),
+            };
         }
     }
+    writer.done();
 }
