@@ -79,8 +79,8 @@ pub fn run_jet(args: Opt) {
     };
 
     let mut writer: Box<dyn Writer> = match args.output_format {
-        SerdeFormat::Json => Box::new(JsonWriter::new()),
-        SerdeFormat::JsonLine => Box::new(JsonLineWriter::new()),
+        SerdeFormat::Json => Box::new(JsonWriter::new(Box::new(io::stdout()))),
+        SerdeFormat::JsonLine => Box::new(JsonLineWriter::new(Box::new(io::stdout()))),
     };
 
     for source in input_sources {
