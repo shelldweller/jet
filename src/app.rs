@@ -95,10 +95,10 @@ pub fn run_jet(args: Opt) {
         };
         for item in reader {
             match item {
-                Ok(document) => writer.write(document),
+                Ok(document) => writer.write(document).unwrap(),
                 Err(error) => eprintln!("{:?}", error),
             };
         }
     }
-    writer.done();
+    writer.done().unwrap();
 }

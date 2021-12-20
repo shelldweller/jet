@@ -1,10 +1,10 @@
-use std::io::{Write};
+use std::io::{Result, Write};
 use serde_json::{Value};
 
 
 pub trait Writer {
-    fn write(&mut self, document: Value);
-    fn done(&mut self);
+    fn write(&mut self, document: Value) -> Result<()>;
+    fn done(&mut self) -> Result<()>;
 }
 
 
@@ -23,20 +23,22 @@ impl<'a> JsonWriter<'a> {
 }
 
 impl<'a> Writer for JsonWriter<'a> {
-    fn write(&mut self, document: Value) {
+    fn write(&mut self, document: Value) -> Result<()> {
         if self.started {
-            self.writer.write(b",");
+            self.writer.write(b",")?;
         } else {
-            self.writer.write(b"[");
+            self.writer.write(b"[")?;
             self.started = true;
         }
-        self.writer.write(&document.to_string().into_bytes());
+        self.writer.write(&document.to_string().into_bytes())?;
+        Ok(())
     }
 
-    fn done(&mut self) {
+    fn done(&mut self) -> Result<()> {
         if self.started {
-            self.writer.write(b"]");
+            self.writer.write(b"]")?;
         }
+        Ok(())
     }
 }
 
@@ -54,11 +56,14 @@ impl<'a> JsonLineWriter<'a> {
 }
 
 impl<'a> Writer for JsonLineWriter<'a> {
-    fn write(&mut self, document: Value) {
-        self.writer.write(&document.to_string().into_bytes());
-        self.writer.write(b"\n");
+    fn write(&mut self, document: Value) -> Result<()> {
+        self.writer.write(&document.to_string().into_bytes())?;
+        self.writer.write(b"\n")?;
+        Ok(())
     }
-    fn done(&mut self) {}
+    fn done(&mut self) -> Result<()> {
+        Ok(())
+    }
 }
 
 
@@ -76,9 +81,9 @@ mod json_writer_tests {
             let mut writer = JsonWriter::new(Box::new(&mut buffer));
             let doc1 = json!({"some": "doc"});
             let doc2 = json!({"other": "doc"});
-            writer.write(doc1);
-            writer.write(doc2);
-            writer.done();
+            writer.write(doc1).unwrap();
+            writer.write(doc2).unwrap();
+            writer.done().unwrap();
         }
         buffer.seek(SeekFrom::Start(0)).unwrap();
         buffer.read_to_string(&mut json_string).unwrap();
