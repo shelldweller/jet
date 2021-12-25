@@ -1,6 +1,7 @@
 mod app;
 mod cli;
 mod enums;
+mod jsonpath;
 mod readers;
 mod writers;
 
