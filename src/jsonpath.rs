@@ -15,8 +15,9 @@ impl<'a> JsonPath<'a> {
         let mut chunks: Vec<JsonKey> = Vec::new();
         let mut last_index = 0;
         let mut in_bracket = false;
+        let bytes = expression.as_bytes();
 
-        for (i, &byte) in expression.as_bytes().iter().enumerate() {
+        for (i, &byte) in bytes.iter().enumerate() {
             let mut flush = false;
             match byte {
                 b'.' => {
@@ -30,6 +31,9 @@ impl<'a> JsonPath<'a> {
                 b'[' => {
                     if in_bracket {
                         return Err(format!("Second `[` opened in position {}", i));
+                    }
+                    if last_index == i {
+                        last_index += 1
                     }
                     flush = true;
                     in_bracket = true;
@@ -53,10 +57,15 @@ impl<'a> JsonPath<'a> {
                 last_index = i + 1;
             }
         }
+
         if in_bracket {
             return Err(format!("Unmatched bracket at the end of `{}`", expression));
         }
-        chunks.push(JsonKey::StrKey(&expression[last_index..]));
+
+        if last_index < bytes.len() {
+            chunks.push(JsonKey::StrKey(&expression[last_index..]));
+        }
+
         Ok(Self {
             parsed_expression: chunks,
         })
@@ -143,6 +152,20 @@ mod jsonpath_tests {
 
         let jp = JsonPath::new("items[10].volumeInfo.title").unwrap();
         assert_eq!(jp.resolve(&value), None);
+    }
+
+    #[test]
+    fn nested_array_subscripts() {
+        let value = json!(
+            [
+                [11, 12, 13],
+                [21, 22, 23]
+            ]
+        );
+        let jp = JsonPath::new("[1][2]").unwrap();
+        let expected = &json!{ 23 };
+        let actual = jp.resolve(&value).unwrap();
+        assert_eq!(actual, expected);
     }
 
     #[test]
